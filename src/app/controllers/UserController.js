@@ -1,5 +1,6 @@
 import * as Yup from 'yup';
 import User from '../models/User';
+import Avatar from '../models/Avatar';
 
 class UserController {
   async store(req, res) {
@@ -68,13 +69,22 @@ class UserController {
       return res.status(401).json({ error: 'Incorrect password' });
     }
 
-    const { id, name, provider } = await User.update(req.body);
+    await User.update(req.body);
+    const { id, name, avatar } = await User.findByPk(user.id, {
+      include: [
+        {
+          model: Avatar,
+          as: 'avatar',
+          attributes: ['id', 'path', 'url'],
+        },
+      ],
+    });
 
     return res.json({
       id,
       name,
       email,
-      provider,
+      avatar,
     });
   }
 }

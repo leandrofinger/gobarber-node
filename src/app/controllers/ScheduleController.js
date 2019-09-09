@@ -2,6 +2,7 @@ import { endOfDay, startOfDay, parseISO } from 'date-fns';
 import { Op } from 'sequelize';
 
 import Appointment from '../models/Appointment';
+import User from '../models/User';
 
 const PAGE_LIMIT = 20;
 
@@ -21,6 +22,13 @@ class ScheduleController {
         offset: (page - 1) * PAGE_LIMIT,
         order: ['date'],
       },
+      include: [
+        {
+          model: User,
+          as: 'user',
+          attributes: ['name'],
+        },
+      ],
     });
 
     return res.json(appointments);

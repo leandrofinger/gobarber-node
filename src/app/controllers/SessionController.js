@@ -2,30 +2,40 @@ import jwt from 'jsonwebtoken';
 
 import User from '../models/User';
 import authConfig from '../../config/auth';
+import Avatar from '../models/Avatar';
 
 class SessionController {
   async store(req, res) {
     const { email, password } = req.body;
-    console.log(req.body);
 
-    const user = await User.findOne({ where: { email } });
+    const user = await User.findOne({
+      where: { email },
+      include: [
+        {
+          model: Avatar,
+          as: 'avatar',
+          attributes: ['id', 'path', 'url'],
+        },
+      ],
+    });
 
     if (!user) {
       return res.status(401).json({ error: 'User not found' });
     }
 
-    console.log('chegando aqui');
     if (!(await user.checkPassword(password))) {
       return res.status(401).json({ error: 'Incorrect password' });
     }
 
-    const { id, name } = user;
+    const { id, name, provider, avatar } = user;
 
     return res.json({
       user: {
         id,
         name,
         email,
+        provider,
+        avatar,
       },
       token: jwt.sign({ id }, authConfig.secret, {
         expiresIn: authConfig.expiresIn,
